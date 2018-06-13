@@ -20,22 +20,23 @@ import static android.arch.persistence.room.ForeignKey.CASCADE;
  */
 
 @Entity(tableName = "news",foreignKeys = @ForeignKey(entity = PublicationVO.class,
-                        parentColumns = "publication-id",
+                        parentColumns = "publication-auto-id",
                         childColumns = "publication_news_id",
                         onDelete = CASCADE))
 public class NewsVO {
 
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    @ColumnInfo(name = "news-auto-id")
+    int newsAutoId;
 
     @ColumnInfo(name = "news-id")
-    private  String newsId;
+     String newsId;
 
     @ColumnInfo(name ="brief")
-    private String brief;
+    String brief;
 
     @ColumnInfo(name ="details")
-    private String details;
+     String details;
 
     @Ignore
     @ColumnInfo(name ="images")
@@ -46,6 +47,11 @@ public class NewsVO {
 
     @ColumnInfo(name = "publication_news_id")
     private String publication_id;
+
+    @Ignore
+    @ColumnInfo(name="publication")
+    private PublicationVO publication;
+
 
     @Ignore
     @ColumnInfo(name ="favorites")
@@ -59,12 +65,20 @@ public class NewsVO {
     @ColumnInfo(name ="sent-tos")
     private List<SentToVO> sentToActions;
 
-    public int getId() {
-        return id;
+    public PublicationVO getPublication() {
+        return publication;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public int getNewsAutoId() {
+        return newsAutoId;
+    }
+
+    public void setNewsAutoId(int newsAutoId) {
+        this.newsAutoId = newsAutoId;
+    }
+
+    public void setPublication(PublicationVO publication) {
+        this.publication = publication;
     }
 
     public String getNewsId() {

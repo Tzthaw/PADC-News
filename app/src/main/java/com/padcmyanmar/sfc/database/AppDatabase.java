@@ -12,6 +12,7 @@ import com.padcmyanmar.sfc.data.vo.NewsVO;
 import com.padcmyanmar.sfc.data.vo.PublicationVO;
 import com.padcmyanmar.sfc.data.vo.SentToVO;
 import com.padcmyanmar.sfc.database.daos.NewsDao;
+import com.padcmyanmar.sfc.database.daos.PublicationDao;
 import com.padcmyanmar.sfc.utils.AppConstants;
 
 @Database(entities = {NewsVO.class,PublicationVO.class},version = 2 ,exportSchema = false)
@@ -19,6 +20,7 @@ public abstract class AppDatabase extends RoomDatabase{
 
     private static AppDatabase appDatabase;
     public abstract NewsDao newsDao();
+    public abstract PublicationDao publicationDao();
 
 
     public static AppDatabase getInMemoryDatabase(Context context){

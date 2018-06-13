@@ -4,8 +4,10 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModel;
 import android.content.Context;
+import android.util.Log;
 
 import com.padcmyanmar.sfc.data.vo.NewsVO;
+import com.padcmyanmar.sfc.data.vo.PublicationVO;
 import com.padcmyanmar.sfc.database.AppDatabase;
 import com.padcmyanmar.sfc.events.RestApiEvents;
 import com.padcmyanmar.sfc.network.MMNewsDataAgent;
@@ -70,7 +72,12 @@ public class NewsModel extends ViewModel{
         appDatabase.newsDao().deleteNewsData();
 
         for(NewsVO newsVO:event.getLoadNews()){
-            appDatabase.newsDao().addNewsData(newsVO);
+            long ids=appDatabase.publicationDao().insert(newsVO.getPublication());
+            Log.i("Id",ids+"");
+              newsVO.setPublication_id(newsVO.getPublication().getPublicationId());
+              appDatabase.newsDao().addNewsData(newsVO);
+
+
         }
 
     }

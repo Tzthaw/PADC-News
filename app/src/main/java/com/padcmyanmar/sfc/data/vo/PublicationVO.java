@@ -14,9 +14,12 @@ import com.google.gson.annotations.SerializedName;
 @Entity(tableName = "publication")
 public class PublicationVO {
 
-    @PrimaryKey
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name ="publication-auto-id")
+    int publicationAutoId;
+
     @ColumnInfo(name ="publication-id")
-    private @NonNull String publicationId;
+    private String publicationId;
 
     @ColumnInfo(name ="title")
     private String title;
@@ -28,7 +31,16 @@ public class PublicationVO {
         return publicationId;
     }
 
+    public int getPublicationAutoId() {
+        return publicationAutoId;
+    }
+
+    public void setPublicationAutoId(int publicationAutoId) {
+        this.publicationAutoId = publicationAutoId;
+    }
+
     public void setPublicationId(String publicationId) {
+
         this.publicationId = publicationId;
     }
 
