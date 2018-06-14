@@ -1,10 +1,10 @@
 package com.padcmyanmar.sfc.activities;
 
-import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
@@ -27,16 +27,22 @@ import com.padcmyanmar.sfc.data.vo.NewsVO;
 import com.padcmyanmar.sfc.delegates.NewsItemDelegate;
 import com.padcmyanmar.sfc.events.RestApiEvents;
 import com.padcmyanmar.sfc.events.TapNewsEvent;
+import com.padcmyanmar.sfc.network.reponses.GetNewsResponse;
 
-import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Date;
-import java.util.List;
+import java.util.concurrent.Callable;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.PublishSubject;
 
 public class NewsListActivity extends BaseActivity
         implements NewsItemDelegate {
@@ -57,6 +63,7 @@ public class NewsListActivity extends BaseActivity
     private NewsAdapter mNewsAdapter;
 
     NewsModel newsModel;
+    private PublishSubject<GetNewsResponse> mNewsSubject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,14 +100,34 @@ public class NewsListActivity extends BaseActivity
         mNewsAdapter = new NewsAdapter(getApplicationContext(), this);
         rvNews.setAdapter(mNewsAdapter);
 
+        mNewsSubject=PublishSubject.create();
 
         newsModel = ViewModelProviders.of(this).get(NewsModel.class);
         newsModel.initDatabase(this);
 
-        newsModel.getAllNewsData().observe(this, new Observer<List<NewsVO>>() {
+        newsModel.loadAllNews(mNewsSubject);
+
+        mNewsSubject.subscribe(new io.reactivex.Observer<GetNewsResponse>() {
             @Override
-            public void onChanged( List<NewsVO>news) {
-                mNewsAdapter.appendNewData(news);
+            public void onSubscribe(Disposable d) {
+
+            }
+
+            @Override
+            public void onNext(GetNewsResponse value) {
+                for(NewsVO newsVO:value.getNewsList()){
+                    mNewsAdapter.addNewData(newsVO);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onComplete() {
+
             }
         });
 
@@ -113,6 +140,8 @@ public class NewsListActivity extends BaseActivity
                 //TODO load more data.
             }
         });
+
+        stringCount("Cat,Dog,Bird");
 
         rvNews.addOnScrollListener(mSmartScrollListener);
     }
@@ -179,5 +208,67 @@ public class NewsListActivity extends BaseActivity
     public void onErrorInvokingAPI(RestApiEvents.ErrorInvokingAPIEvent event) {
         Snackbar.make(rvNews, event.getErrorMsg(), Snackbar.LENGTH_INDEFINITE).show();
     }
+
+    public void stringCount(String substring){
+        int itemCount= substring.split(",").length;
+        operationExecution(itemCount);
+    }
+
+    public Integer operation(int itemCount) {
+        try {
+            // "Simulate" the delay.
+            Thread.sleep(itemCount);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return itemCount;
+    }
+
+    private void operationExecution(final int itemCount) {
+        Single<Integer> integerSingle = Single.fromCallable(new Callable<Integer>() {
+            @Override
+            public Integer call() throws Exception {
+                return operation(itemCount);
+            }
+        });
+
+        integerSingle
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Integer>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(@NonNull Integer integer) {
+                        Log.e("value is ","integer : "+integer+"\n");
+//                        tvText.setText("Operation has finished. The value is " + integer + "\n");
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+
+                    }
+                });
+
+        recursiveLogger(1);
+
+    }
+
+    private void recursiveLogger(final int index) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Log.e("Time waited","indes "+index);
+                if (index < 20) {
+                    recursiveLogger(index + 1);
+                }
+            }
+        }, 500);
+    }
+
+
 
 }
